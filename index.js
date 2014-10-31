@@ -1,5 +1,11 @@
 'use strict';
 
 module.exports = {
-  name: 'ember-cli-couchdb'
+  name: 'couchdb',
+
+  included: function(app) {
+    this._super.included(app);
+
+    app.import(app.bowerDirectory + '/pouchdb/dist/pouchdb.js');
+  }
 };
