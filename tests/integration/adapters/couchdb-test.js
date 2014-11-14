@@ -10,9 +10,34 @@ module('CouchDB Adapter', {
     this.db = this.store.adapterFor({ typeKey: 'post' }).get('db');
   },
   teardown: function() {
-    this.db.destroy();
+    stop();
+    this.db.destroy(start);
     Ember.run(App, 'destroy');
   }
+});
+
+test('Store#find/2', function() {
+  var _this = this,
+      name = "Rails is omakase";
+
+  stop();
+  new Ember.RSVP.Promise(function(resolve, reject) {
+    _this.db.put({ _id: 'post::1', name: name }, function(err, resp) {
+      if (err) { reject(err); }
+      else { resolve(resp); }
+    });
+  })
+  .then(function() {
+    return _this.store.find('post', 1);
+  })
+  .then(function(record) {
+    equal(record.get('id'), 1, "Record ID is correct");
+    equal(record.get('name'), name, "Record data is correct");
+  })
+  .catch(function(err) {
+    ok(false, "Error: " + err);
+  })
+  .finally(start);
 });
 
 test('Model#save', function() {
@@ -32,8 +57,8 @@ test('Model#save', function() {
       }, function(err) {
         ok(false, "Document should exist in database, message: " + err.message);
       });
-    }).catch(function() {
-      ok(false, "Should be successful");
-    }).finally(function() { start(); });
+    }).catch(function(err) {
+      ok(false, "Error: " + err);
+    }).finally(start);
   });
 });
