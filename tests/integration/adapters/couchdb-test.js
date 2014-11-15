@@ -16,6 +16,31 @@ module('CouchDB Adapter', {
   }
 });
 
+test('Store#find/1', function() {
+  var _this = this;
+
+  stop();
+  new Ember.RSVP.Promise(function(resolve, reject) {
+    _this.db.bulkDocs([
+        { _id: 'post::1' },
+        { _id: 'post::2' },
+        { _id: 'comment::1' },
+        { _id: 'comment::2' },
+        { _id: 'comment::3' }
+      ], function(err, resp) {
+      if (err) { reject(err); }
+      else { resolve(resp); }
+    });
+  })
+  .then(function() {
+    return _this.store.find('post');
+  })
+  .then(function(posts) {
+    equal(posts.get('length'), 2, "Correct number of Records are found");
+  })
+  .finally(start);
+});
+
 test('Store#find/2', function() {
   var _this = this,
       name = "Rails is omakase";
