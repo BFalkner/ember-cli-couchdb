@@ -40,30 +40,30 @@ test('Store#find/2', function() {
   .finally(start);
 });
 
-test('Model#save (new record)', function() {
+test('Model#save (create)', function() {
   var _this = this,
+      name = "Rails is omakase",
       record = Ember.run(function() {
-        return _this.store.createRecord('post', { id: 1, name: "Rails is omakase" });
+        return _this.store.createRecord('post', { id: 1, name: name });
       });
 
   stop();
-  Ember.run(function() {
-    record.save().then(function() {
-      equal(record.get("isNew"), false, "Record should be saved");
-      return _this.db.get('post::1').then(function(doc) {
-        ok(doc, "Document should exist in database");
-        equal(record.get('data.rev'), doc._rev, "Revision should be set on Record data");
-        equal(doc.name, "Rails is omakase", "Data should be set");
-      }, function(err) {
-        ok(false, "Document should exist in database, message: " + err.message);
-      });
-    }).catch(function(err) {
-      ok(false, "Error: " + err);
-    }).finally(start);
-  });
+  Ember.run(function() { return record.save(); })
+  .then(function() {
+    equal(record.get("isNew"), false, "Record should be saved");
+    return _this.db.get('post::1');
+  })
+  .then(function(doc) {
+    ok(doc, "Document should exist in database");
+    equal(record.get('data.rev'), doc._rev, "Revision should be set on Record data");
+    equal(doc.name, name, "Data should be set");
+  })
+  .catch(function(err) {
+    ok(false, "Error: " + err);
+  }).finally(start);
 });
 
-test('Model#save (existing record)', function() {
+test('Model#save (update)', function() {
   var _this = this,
       names = ["Rails is omakase",
                "Yum sushi"],
