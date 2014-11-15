@@ -40,7 +40,7 @@ test('Store#find/2', function() {
   .finally(start);
 });
 
-test('Model#save', function() {
+test('Model#save (new record)', function() {
   var _this = this,
       record = Ember.run(function() {
         return _this.store.createRecord('post', { id: 1, name: "Rails is omakase" });
@@ -61,4 +61,46 @@ test('Model#save', function() {
       ok(false, "Error: " + err);
     }).finally(start);
   });
+});
+
+test('Model#save (existing record)', function() {
+  var _this = this,
+      names = ["Rails is omakase",
+               "Yum sushi"],
+      record;
+
+  stop();
+  new Ember.RSVP.Promise(function(resolve, reject) {
+    _this.db.put({ _id: 'post::1' }, function(err, resp) {
+      if (err) { reject(err); }
+      else { resolve(resp); }
+    });
+  })
+  .then(function() {
+    return _this.store.find('post', 1);
+  })
+  .then(function(r) {
+    record = r;
+    record.set('name', names[0]);
+    return record.save();
+  })
+  .then(function() {
+    return _this.db.get('post::1');
+  })
+  .then(function(doc) {
+    equal(doc.name, names[0], "Record data is saved on Document");
+
+    record.set('name', names[1]);
+    return record.save();
+  })
+  .then(function() {
+    return _this.db.get('post::1');
+  })
+  .then(function(doc) {
+    equal(doc.name, names[1], "Revision is updated on Record");
+  })
+  .catch(function(err) {
+    ok(false, "Error: " + err);
+  })
+  .finally(start);
 });

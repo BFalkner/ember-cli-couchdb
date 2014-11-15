@@ -22,7 +22,14 @@ export default DS.JSONSerializer.extend({
       hash.id = this.decollate(hash.id)[1];
     }
 
+    this.normalizeRev(hash);
+
     return hash;
+  },
+
+  normalizeRev: function(hash) {
+    hash.rev = hash._rev;
+    delete hash._rev;
   },
 
   serialize: function(record, options) {
@@ -33,10 +40,14 @@ export default DS.JSONSerializer.extend({
       json._id = this.collate([ type.typeKey, json._id ]);
     }
 
+    if (options.includeRev) {
+      json._rev = get(record, "data.rev");
+    }
+
     return json;
   },
 
-  extractCreateRecord: function(store, type, payload) {
+  extractSave: function(store, type, payload) {
     payload.id = this.decollate(payload.id)[1];
 
     delete payload.ok;

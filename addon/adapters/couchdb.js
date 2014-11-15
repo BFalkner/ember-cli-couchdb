@@ -65,6 +65,28 @@ export default DS.Adapter.extend({
   },
 
 
-  updateRecord: function(/* store, type, record */) {},
+  updateRecord: function(store, type, record) {
+    var serializer = store.serializerFor(type.typeKey),
+        json = serializer.serialize(record, { includeId: true, includeRev: true }),
+        db = get(this, "db");
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      db.put(json, function(err, doc) {
+        if (err) {
+          Ember.run(null, reject, err);
+          return;
+        }
+
+        Ember.run(function() {
+          var extracted = serializer.extractUpdateRecord(store, type, doc);
+
+          store.update(type.typeKey, extracted);
+
+          resolve();
+        });
+      });
+    });
+  },
+
   deleteRecord: function(/* store, type, record */) {},
 });
