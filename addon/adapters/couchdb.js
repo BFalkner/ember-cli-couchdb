@@ -63,7 +63,6 @@ export default DS.Adapter.extend({
 
   findQuery: function(/* store, type, query */) {},
 
-
   createRecord: function(store, type, record) {
     var serializer = store.serializerFor(type.typeKey),
         json = serializer.serialize(record, { includeId: true }),
@@ -86,7 +85,6 @@ export default DS.Adapter.extend({
       });
     });
   },
-
 
   updateRecord: function(store, type, record) {
     var serializer = store.serializerFor(type.typeKey),
@@ -111,5 +109,23 @@ export default DS.Adapter.extend({
     });
   },
 
-  deleteRecord: function(/* store, type, record */) {},
+  deleteRecord: function(store, type, record) {
+    var serializer = store.serializerFor(type.typeKey),
+        json = serializer.serialize(record, { includeId: true, includeRev: true }),
+        db = get(this, "db");
+
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      db.remove(json._id,
+                json._rev,
+                function(err, doc) {
+        if (err) {
+          Ember.run(null, reject, err);
+          return;
+        }
+
+        Ember.run(null, resolve, doc);
+      });
+    });
+  }
+  
 });

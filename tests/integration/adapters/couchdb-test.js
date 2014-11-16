@@ -38,6 +38,9 @@ test('Store#find/1', function() {
   .then(function(posts) {
     equal(posts.get('length'), 2, "Correct number of Records are found");
   })
+  .catch(function(err) {
+    ok(false, "Error: " + err);
+  })
   .finally(start);
 });
 
@@ -123,6 +126,33 @@ test('Model#save (update)', function() {
   })
   .then(function(doc) {
     equal(doc.name, names[1], "Revision is updated on Record");
+  })
+  .catch(function(err) {
+    ok(false, "Error: " + err);
+  })
+  .finally(start);
+});
+
+test('Model#destroyRecord', function() {
+  var _this = this;
+
+  stop();
+  new Ember.RSVP.Promise(function(resolve, reject) {
+    _this.db.put({ _id: 'post::1' }, function(err, resp) {
+      if (err) { reject(err); }
+      else { resolve(resp); }
+    });
+  })
+  .then(function() {
+    return _this.store.find('post', 1);
+  })
+  .then(function(record) {
+    return record.destroyRecord();
+  })
+  .then(function() {
+    _this.db.get('post::1')
+    .then(function() { ok(false, "Document is deleted"); })
+    .catch(function() { ok(true, "Document is deleted"); });
   })
   .catch(function(err) {
     ok(false, "Error: " + err);
