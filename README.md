@@ -1,4 +1,4 @@
-# Ember-cli-couchdb
+# Ember-cli-couchdb [![Build Status](https://travis-ci.org/BFalkner/ember-cli-couchdb.svg)](https://travis-ci.org/BFalkner/ember-cli-couchdb)
 
 This README outlines the details of collaborating on this Ember addon.
 
